@@ -92,20 +92,18 @@ permutation_pvalue_left <- function(p) {
   n_samples <- length(p$permuted)
   return((n_below + 1)/(n_samples + 1))
 }
-permutation_pvalue_twosided <- function(p) {
-  return(2*min(permutation_pvalue_left(p), permutation_pvalue_right(p)))
+permutation_pvalue_twosided <- function(stats, obs) {
+  return(2*min(permutation_pvalue_left(stats, obs),
+               permutation_pvalue_right(stats, obs)))
 }
 
 
-
 ## Exercice 3
-permutation_t_test <- function(d, value, grouping_var, group1, group2, N_SAMPLES=9999){
-  statistics <- rep(NA, N_SAMPLES)
-  for (i in 1:N_SAMPLES){
-    d[[grouping_var]] <- sample(d[[grouping_var]])
-    # run t-test for permutation groups
-    statistics[i] <- t.test(dplyr::filter(d, get(grouping_var) == group1)$value, dplyr::filter(d, get(grouping_var) == group2)$value)$statistic
-  } 
-  return (statistics)
+permutation_t_test <- function(x1, x2)  {
+  diff_in_means <- mean(x1) - mean(x2)
+  n1 <- length(x1)
+  n2 <- length(x2)
+  variance_term <- sqrt( var(x1)/n1 + var(x2)/n2 )
+  return(diff_in_means/variance_term)
 }
 

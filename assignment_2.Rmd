@@ -15,43 +15,47 @@ source("function.R")
 `%>%` <- magrittr::`%>%`
 ```
 
-## Exercise 1
-First do some permutation tests for the two subgroups:
+## Exercice 1
+Test de permutation
 ```{r cache=TRUE}
-# extract subsets from iris
+
 iris_subset_1 <- iris[c(89:94, 108:112),]
 iris_subset_2 <- iris[c(88:114),]
 
-# do permutation tests
-# Permutation test on Sepal Width  using the difference between versicolor and virginica, on first subset
+
 permutation_iris_subset1 <- permutation_twogroups(iris_subset_1, "Sepal.Width", "Species", "versicolor",
 "virginica", difference_in_medians)
 permutation_iris_subset2 <- permutation_twogroups(iris_subset_2, "Sepal.Width", "Species", "versicolor",
 "virginica", difference_in_medians)
+
+mean_diff_subset1 <- difference_in_medians(iris_subset_1, "Sepal.Width", "Species", "versicolor", "virginica")
+mean_diff_subset2 <- difference_in_medians(iris_subset_2, "Sepal.Width", "Species", "versicolor"," virginica")
 ```
 
+
 ```{r}
+# vérification pour iris_subset_1
 print(iris_subset_1)
 ```
 
 ```{r}
+# vérification pour iris_subset_2
 print(iris_subset_2)
 ```
 
 
-plot d'histogramme
+Histrogramme
 ```{r}
-# extract the values observed and permuted statistics
 observed_value_subset1 <- permutation_iris_subset1["observed"]
 ptest_stats_subset1 <- tibble::as_tibble(permutation_iris_subset1["permuted"])
 observed_value_subset2 <- permutation_iris_subset2["observed"]
 ptest_stats_subset2 <- tibble::as_tibble(permutation_iris_subset2["permuted"])
 
-# plot with the same x scale
+
 lim_min <- min(ptest_stats_subset1, ptest_stats_subset2)
 lim_max <- max(ptest_stats_subset1, ptest_stats_subset2)
 
-# Histogram for the first subset
+
 
 ggplot2::ggplot(ptest_stats_subset1, 
       ggplot2::aes(x=permuted)) + ggplot2::geom_histogram(fill=I("blue"), 
@@ -62,7 +66,7 @@ ggplot2::ggplot(ptest_stats_subset1,
                         size = 1) + ggplot2::xlim(lim_min, lim_max)
 
 
-# Histogram for the second subset
+
 
 ggplot2::ggplot(ptest_stats_subset2, 
         aes(x=permuted)) + ggplot2::geom_histogram(fill=I("blue"), 
@@ -93,34 +97,37 @@ Et, on peut savoir que le subset 1 est plus petit que le subset 2. On peut donc 
 
 **p-value** pour les deux testes
 ```{r}
-permutation_pvalue_twosided(ptest_stats_subset1)
-permutation_pvalue_twosided(ptest_stats_subset2)
+p_val_sub1 <- find_two_sided(ptest_stats_subset1, mean_diff_sub1)
+p_val_sub2 <- find_two_sided(permuted_sub2, mean_diff_sub2)
+
+print(p_val_sub1)
+print(p_val_sub2)
 ```
 
-**Comments on two-sided p-value**:
+
 ```
 
 ```
 
 ## Exercise 2
 ```{r}
-#install.packages("devtools")
+#install.packages : "devtools"
 devtools::install_github("ewan/stats_course", subdir="data/stress_shift")
 ```
 
-### Task A
+#### Task A
 ```{r}
 stress_shift_3dict <- dplyr::filter(stressshift::stress_shift_unamb, Dict=="W1802" | Dict=="J1917" | Dict=="C1687")
 print(nrow(stress_shift_3dict)==451)
 ```
 
-### Task B
+#### Task B
 ```{r}
 stress_shift_3dict_using_pipe <- stressshift::stress_shift_unamb %>%  dplyr::filter(Dict=="W1802" | Dict=="J1917" | Dict=="C1687")
 identical(stress_shift_3dict, stress_shift_3dict_using_pipe)
 ```
 
-### Task C
+#### Task C
 ```{r}
 stress_shift_3dict_nouns <- dplyr::filter(stress_shift_3dict, Category=="Noun")
 stress_shift_3dict_verbs <- dplyr::filter(stress_shift_3dict, Category=="Verb")
@@ -128,7 +135,7 @@ stress_shift_3dict_verbs <- dplyr::filter(stress_shift_3dict, Category=="Verb")
 stress_shift_3dict_using_bind <- dplyr::bind_rows(stress_shift_3dict_nouns, stress_shift_3dict_verbs)
 stress_shift_3dict_using_bind_reversed <- dplyr::bind_rows(stress_shift_3dict_verbs, stress_shift_3dict_nouns)
 
-#check which of the two binded tables is identical with stress_shift_3dict
+
 identical(stress_shift_3dict_using_bind, stress_shift_3dict) 
 identical(stress_shift_3dict_using_bind_reversed, stress_shift_3dict)
 ```
@@ -138,7 +145,7 @@ Parce que; pour le 1èr résultat, il prend la même ordre. Il est donc identiqu
 
 Si je travaille avec ces données, on dois comprendre les données et l'ordre des données, et il est important l'ordre des données.
 
-### Task D
+#### Task D
 ```{r}
 stress_shift_nouns_renamed <- stressshift::stress_shift_unamb %>% 
                               dplyr::filter(Category == "Noun") %>% 
@@ -159,12 +166,11 @@ On a obtenu le résultat "Word" et "Dict" par la fonction **inner_join(x,y)**. P
 #### Task E
 
 ```{r}
-
-ggplot2::ggplot( stressshift::stress_shift_unamb, 
-        ggplot2::aes(x=Category, fill=Syllable)) + ggplot2::geom_bar(colour="blue") 
+ggplot2::ggplot(stressshift::stress_shift_unamb, ggplot2::aes(x=Category, fill=Syllable)) + 
+        ggplot2::geom_bar(position="dodge", colour="green")
 ```
 
-#### Task F
+####Task F
 
 ```{r}
 
@@ -182,25 +188,24 @@ ggplot2::ggplot(stress_shift_byword, ggplot2::aes(x=Noun_Percent_Syll_1, y=Verb_
     ggplot2::geom_point(shape=1)
 ```
 
-#### Task H
+### Task H
 
 ```{r}
-
 stress_shift_wide_all <- dplyr::full_join(stress_shift_nouns_renamed, stress_shift_verbs_renamed)
+
 stress_shift_byword_all <- stress_shift_wide_all %>%
-                           dplyr::group_by(Word) %>%
-                           dplyr::summarise(Noun_Percent_Syll_1=(sum(Syllable_Noun=="Syllable 1")/n())*100, 
-                                            Verb_Percent_Syll_1=(sum(Syllable_Verb=="Syllable 1")/n())*100)
-stopifnot(nrow(stress_shift_byword_all)==149)
+  dplyr::group_by(Word) %>%
+  dplyr::summarise(Noun_Percent_Syll_1=  (sum(Syllable_Noun=="Syllable 1")/n())*100, 
+            Verb_Percent_Syll_1=  (sum(Syllable_Verb=="Syllable 1")/n())*100)
 ```
 
 ## Exercise 3
 ```{r}
-# creation de le 1er data frame
+# creation du 1er data frame
 set.seed(12)
 a1 <- data.frame("group"="A", "value" = rnorm(50, 3, 2))
 b1 <- data.frame("group"="B", "value" = rnorm(50, 4, 2))
-data <- dplyr::bind_rows(a1, b1)
+data1 <- dplyr::bind_rows(a1, b1)
 set.seed(NULL)
 ```
 
@@ -210,32 +215,69 @@ t.test(a1$value, b1$value)
 ```
 **Explication 1**
 On peut savoir que La t-value est -4.196 et le df est 97.99.
-C'est ici où on peut dire qu'il est significant car la p-value est 5.974e-05.  
+C'est ici où on epeut dire qu'il est significant car la p-value est 5.974e-05.  
 Donc, on ne peut pas adopter l'hypothèse nulle car la p-value est inférieure à 0.05.  
 L'écart maximal de la moyenne peut être aussi faible que -2.13 et aussi élevé que -0.76
 Et, il montre également que l'échantillon de la moyenne pour x, est 2.714141, et celle pour y, est 4.161185.
 
 Maintenant on fait encore le t-test avec 5 sample dans le chaque groupe
 ```{r}
-# creation de le 2ème data frame
+# creation du 2ème data frame
 set.seed(12)
 a2 <- data.frame("group"="A", "value" = rnorm(5, 3, 2))
 b2 <- data.frame("group"="B", "value" = rnorm(5, 4, 2))
-data <- dplyr::bind_rows(a2, b2)
+data2 <- dplyr::bind_rows(a2, b2)
 set.seed(NULL)
 ```
 ```{r}
 t.test(a2$value, b2$value)
 ```
-**Explication 2**
 C'est ici où on peut dire qu'il n'est pas significant car la p-value est 0.1577  
 Donc, on peut adopter l'hypothèse nulle car la p-value est supérieure à 0.05.
 L'ecart maximal de la moyenne peut être aussi faible que 1.488884, et aussi élevé que 3.64226
 
+Pour l'expérience 1, on rejete l'hypothèse nulle, tandis que, pour l'expérience 2, on l'adapte car la p-value est supéirue à 0.05.  
 
-**Pourquoi a-t-il la différence ?**
-Pour l'expérience 1, on rejete l'hypothèse nulle, tandis que, pour l'expérience 2, on l'adapte car la p-value est supéirue à 0.05. 
-For experiment 1 we reject the null hypothesis, while for the experiment 2 we accepte it because the seconde p-value is larger than 0.05. 
+#### Histogramme 1
+```{r}
+overall_mean <- mean(c(a1$value,b1$value))
+
+N_SAMPLES <- 9999
+statistics <- rep(NA, N_SAMPLES)
+for (i in 1:N_SAMPLES) {
+  A_h0 <- rnorm(50, overall_mean, 2)
+  B_h0 <- rnorm(50, overall_mean, 2)
+  statistics[i] <- permutation_t_test(A_h0, B_h0)
+}
+
+hist(statistics, freq=FALSE, breaks=80, xlim=c(-6,6))
+abline(v=permutation_t_test(a1$value,b1$value))
+```
+on peut observer que la distribution empirique est 0. Donc, on peut rejeter l’hypothèse nulle car on ne peut pas verifier la valeur t qui n'est pas graphiquement dans la distribution de la variable de t-test.
+
+### Histrogramme 2
+```{r}
+
+overall_mean <- mean(c(a2$value,b2$value))
+
+N_SAMPLES <- 9999
+statistics <- rep(NA, N_SAMPLES)
+for (i in 1:N_SAMPLES) {
+  A_h0 <- rnorm(5, overall_mean, 2)
+  B_h0 <- rnorm(5, overall_mean, 2)
+  statistics[i] <- permutation_t_test(A_h0, B_h0)
+}
+
+hist(statistics, freq=FALSE, breaks=80, xlim=c(-6,6))
+abline(v=permutation_t_test(a2$value,b2$value))
+
+```
+On peut savoir le fait que la valeur t soit dans la distribution de la variable de t-test. 
+
+c'est-à-dire, si on prend 5, on obtient le t valeur qui est proche de 0. Donc on peut adapter l'hypothèse nulle car la t-value n'est pas à l'intervalle de confiance. En revanche, si on a 50, on ne peut pas adapter l'hypothèse nulle car on peut regarder que la t-value se place à l'intervalle de confiance. 
+
+
+## Exercice 4
 
 
 
