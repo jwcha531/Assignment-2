@@ -44,7 +44,6 @@ print(iris_subset_2)
 ```
 
 
-Histrogramme
 ```{r}
 observed_value_subset1 <- permutation_iris_subset1["observed"]
 ptest_stats_subset1 <- tibble::as_tibble(permutation_iris_subset1["permuted"])
@@ -95,20 +94,14 @@ Et, on peut savoir que la valeur observée du subset 1 est plus petit que celle 
 
 
 
-**p-value** pour les deux testes
-```{r}
-p_value_right_subset1 <- permutation_pvalue_right(ptest_stats_subset1, observed_value_subset1)
-p_value_left_subset1 <- permutation_pvalue_left(ptest_stats_subset1, observed_value_subset1)
-cat(p_value_right_subset1, p_value_left_subset1)
-
-p_value_right_subset2 <- permutation_pvalue_right(ptest_stats_subset2, observed_value_subset2)
-p_value_left_subset2 <- permutation_pvalue_left(ptest_stats_subset2, observed_value_subset2)
-cat(p_value_right_subset2, p_value_left_subset2)
+**p-value** 
+```{r, collapse=TRUE}
+permutation_pvalue_twosided(ptest_stats_subset1$permuted, observed_value_subset1)
+permutation_pvalue_twosided(ptest_stats_subset2$permuted, observed_value_subset2)
 ```
-On peut d'abord supposer que, Dans le cas du test droite, la probabilité de la valeur de permutation est moins que la valeur observé, et que, dans le cas du test gauche, la probablitié de la valeur de permutation est plus que la valeur observé.  
 
-Et, On peut savoir les deux résultats sur deux tests. D'abord, dans le subset 1 et 2, les p-valeurs gauches sont inférieures aux p-valeurs droites. (pour le subset 1, 0.779878 >  0.2703270 / pour le subset 2, 0.9405941>0.1272127). 
-dans le cas des p_values droites, le subset 2 est supérieur au subset 1 (0.9405941 > 0.779878). Et, on peut supposer que la valeur observée du subset 2 ne peut bien pas observer dans le test de permutation.
+On peut décider d'accepter ou de rejeter l'hypothèse nulle par la p-value. si la p-value est inférieur à 0.05, on peut dire d'être significative. 
+Dans nos exemples subset 1 et subset 2, la p-value est supérieur à 0.05. Donc on ne peut pas rejeter des deux hypothèses nulles. Et, les deux subsets, les valeurs de permutation sont le plus supérieurs à leurs valeurs observées.
 
 ## Exercise 2
 ```{r}
@@ -278,37 +271,54 @@ On peut savoir le fait que la valeur t soit dans la distribution de la variable 
 c'est-à-dire, si on prend 5, on obtient le t valeur qui est proche de 0. Donc on peut adapter l'hypothèse nulle car la t-value n'est pas à l'intervalle de confiance. En revanche, si on a 50, on ne peut pas adapter l'hypothèse nulle car on peut regarder que la t-value se place à l'intervalle de confiance. 
 
 
-## Exercice 4
+# Exercise 4
 ```{r}
-sample_size <- c(50, 5)
-s_d <- c(2, 6)
-diff_in_mean <- c(1, 2)
-power_df <- NULL
 
-for (size in sample_size) {
-  for (mean in diff_in_mean) {
-    for (sd in s_d) {
-      N_SAMPLES <- 9999
+# Conditions :
+s_sizes <- c(5,50)
+means <- c(1,2)
+s_deviations <- c(2,6)
+alpha <- 0.01
+power_df <- NULL
+for (size in s_sizes){
+  for (mean in means){
+    for (sd in s_deviations){
       n_successes <- 0
-      for (i in N_SAMPLES){
-        sample_1 <- rnorm(size, 3, sd)
-        sample_2 <- rnorm(size, 3+mean, sd)
-        df <- tibble::data_frame(value=c(sample_1, sample_2), group=c(rep("A", size), rep("B",size)))
-        pval <- t.test(dplyr::filter(df, group == "A")$value, dplyr::filter(df, group == "B")$value)$p.value
-        if (pval < 0.05){
-          n_successes <- n_successes + 1
-        }
+      N_SAMPLES <- 1000
+      for(i in 1:N_SAMPLES){
+          a <- data.frame("group"= "A", "value" = rnorm(size, mean, sd))
+          b <- data.frame("group"= "B", "value" = rnorm(size, mean, sd))
+          p_value <- t.test(a$value, b$value)$p.value
+          if (p_value < 0.05){n_successes <- n_successes + 1}
+          power <- n_successes / N_SAMPLES
+          power_df_current <- tibble::data_frame(power=power, size=size, mean=mean, sd=sd)
+          power_df <- dplyr::bind_rows(power_df, power_df_current)
       }
-      power <- n_successes / N_SAMPLES
-      power_df_current <- tibble::data_frame(power=power, size=size, sd=sd, mean=mean)
-      power_df <- dplyr::bind_rows(power_df, power_df_current)
     }
   }
 }
 ```
 
-
+#### Results sur plot
 ```{r}
+ggplot2::ggplot(power_df, 
+                ggplot2::aes(x=size, y=power)) +
+                ggplot2::labs(title="Taille", x="taille", y="Power") + 
+                ggplot2::geom_count(colour="black") +
+                ggplot2::theme_minimal()
 
+ggplot2::ggplot(power_df, 
+                ggplot2::aes(x=mean, y=power)) +
+                ggplot2::labs(title="Moyenne", x="Moyenne", y="Power") + 
+                ggplot2::geom_count(colour="red")+
+                ggplot2::theme_minimal()
+
+ggplot2::ggplot(power_df, 
+                ggplot2::aes(x=sd, y=power)) +
+                ggplot2::labs(title="Ecart type", x="Ecart type", y="Power") + 
+                ggplot2::geom_count(colour="green")+
+                ggplot2::theme_minimal()
 ```
 
+On fait à 3 plots : les variables de la colonne verticale "power", les colonnes horizontales "moyenne", "Ecart type" et "taille" avec les résultats des 8 combinaisons.
+On peut vérifier que, dans le "taille", la taille de "50" est meuilleure que celle de 5. Dans la "moyenne", la moyenne de "1" est meilleurs que celle de "2". Et, Dans la "écart type"", l'écart type de "2" est meilleurs que celui de "6.
