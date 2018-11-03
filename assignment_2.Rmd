@@ -274,48 +274,59 @@ c'est-à-dire, si on prend 5, on obtient le t valeur qui est proche de 0. Donc o
 # Exercise 4
 ```{r}
 # Conditions :
-s_sizes <- c(5,50)
+
+sample_sizes <- c(5,50)
 means <- c(1,2)
-s_deviations <- c(2,6)
+stardard_deviations <- c(2,6)
+
 alpha <- 0.01
 power_df <- NULL
-for (size in s_sizes){
+for (size in sample_sizes){
   for (mean in means){
-    for (sd in s_deviations){
+    for (deviation in stardard_deviations){
       n_successes <- 0
       for(i in 1:1000){
-          a <- data.frame("group"= "A", "value" = rnorm(size, mean, sd))
-          b <- data.frame("group"= "B", "value" = rnorm(size, mean, sd))
+          a <- data.frame("group"= "A", "value" = rnorm(size, mean, deviation))
+          b <- data.frame("group"= "B", "value" = rnorm(size, mean, deviation))
           p_value <- t.test(a$value, b$value)$p.value
           if (p_value < 0.05){n_successes <- n_successes + 1}
+          }
           power <- n_successes / 1000
-          power_df_current <- tibble::data_frame(power=power, size=size, mean=mean, sd=sd)
+          power_df_current <- tibble::data_frame(power=power,
+                                                 size=size,
+                                                 mean=mean,
+                                                 deviation=deviation)
           power_df <- dplyr::bind_rows(power_df, power_df_current)
-      }
     }
   }
 }
+
+
 ```
 
-#### Results sur plot
+#### Plotting results
+
+
+
 ```{r}
 ggplot2::ggplot(power_df, 
                 ggplot2::aes(x=size, y=power)) +
-                ggplot2::labs(title="Taille", x="taille", y="Power") + 
+                ggplot2::labs(title="Size Plot", x="Size", y="Power") + 
                 ggplot2::geom_count(colour="yellow") +
                 ggplot2::theme_dark()
 
 ggplot2::ggplot(power_df, 
                 ggplot2::aes(x=mean, y=power)) +
-                ggplot2::labs(title="Moyenne", x="Moyenne", y="Power") + 
-                ggplot2::geom_count(colour="red")+
+                ggplot2::labs(title="Mean Plot", x="Mean", y="Power") + 
+                ggplot2::geom_count(colour="pink")+
                 ggplot2::theme_dark()
 
 ggplot2::ggplot(power_df, 
-                ggplot2::aes(x=sd, y=power)) +
-                ggplot2::labs(title="Ecart type", x="Ecart type", y="Power") + 
+                ggplot2::aes(x=deviation, y=power)) +
+                ggplot2::labs(title="Ecart typet", x="Ecart type", y="Power") + 
                 ggplot2::geom_count(colour="green")+
                 ggplot2::theme_dark()
+
 ```
 
 On fait à 3 plots : les variables de la colonne verticale "power", les colonnes horizontales "moyenne", "Ecart type" et "taille" avec les résultats des 8 combinaisons.
