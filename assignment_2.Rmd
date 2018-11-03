@@ -1,0 +1,314 @@
+---
+title: "Assignment_2"
+author: "Jinwoo CHA"
+date: "10/11/2018"
+output: html_document
+---
+
+```{r setup}
+library(ggplot2)
+library(dplyr)
+source("function_2.R")
+```
+
+```{r}
+`%>%` <- magrittr::`%>%`
+```
+
+## Exercice 1
+Test de permutation
+```{r cache=TRUE}
+
+iris_subset_1 <- iris[c(89:94, 108:112),]
+iris_subset_2 <- iris[c(88:114),]
+
+
+permutation_iris_subset1 <- permutation_twogroups(iris_subset_1, "Sepal.Width", "Species", "versicolor",
+"virginica", difference_in_medians)
+permutation_iris_subset2 <- permutation_twogroups(iris_subset_2, "Sepal.Width", "Species", "versicolor",
+"virginica", difference_in_medians)
+
+mean_diff_subset1 <- difference_in_medians(iris_subset_1, "Sepal.Width", "Species", "versicolor", "virginica")
+mean_diff_subset2 <- difference_in_medians(iris_subset_2, "Sepal.Width", "Species", "versicolor"," virginica")
+```
+
+
+```{r}
+# vérification pour iris_subset_1
+print(iris_subset_1)
+```
+
+```{r}
+# vérification pour iris_subset_2
+print(iris_subset_2)
+```
+
+
+```{r}
+observed_value_subset1 <- permutation_iris_subset1["observed"]
+ptest_stats_subset1 <- tibble::as_tibble(permutation_iris_subset1["permuted"])
+observed_value_subset2 <- permutation_iris_subset2["observed"]
+ptest_stats_subset2 <- tibble::as_tibble(permutation_iris_subset2["permuted"])
+
+
+lim_min <- min(ptest_stats_subset1, ptest_stats_subset2)
+lim_max <- max(ptest_stats_subset1, ptest_stats_subset2)
+
+
+
+ggplot2::ggplot(ptest_stats_subset1, 
+      ggplot2::aes(x=permuted)) + ggplot2::geom_histogram(fill=I("blue"), 
+      col=I("red")) + ggplot2::labs(title="Histogram of the permutation test statistics for subset 1",
+                  x="permuted values", 
+                  y="count") + ggplot2::geom_vline(ggplot2::aes(xintercept=unlist(observed_value_subset1)), 
+                        show.legend = T, 
+                        size = 1) + ggplot2::xlim(lim_min, lim_max)
+
+
+
+
+ggplot2::ggplot(ptest_stats_subset2, 
+        aes(x=permuted)) + ggplot2::geom_histogram(fill=I("blue"), 
+      col=I("red")) + ggplot2::labs(title="Histogram of the permutation test statistics for subset 2",
+                  x="permuted values", 
+                  y="count") + ggplot2::geom_vline(ggplot2::aes(xintercept=unlist(observed_value_subset2)), 
+                        show.legend = T, 
+                        size = 1) + ggplot2::xlim(lim_min, lim_max)
+
+
+```
+
+
+**Observation pour 2 histrogrammes**
+Pour subset 1, les valeurs se dispersent vers les quelques inférieures et supérieures. Mais, pour subset 2, elles se rassemblent au centre et s'étalent vers un peu dorite.
+
+Pour subset 1, il existe de nobmreux intervalles entre les valeurs, et surtout l'intervalle est la plus grande entre -0.25 et 0. Tandis que, pour subset 2, elles distribuent plus équitable que subset 1, et l'intervalle aussi, il n'existe pas beaucoup.
+
+Et, on peut observer le test statistiques que le subset 1 est -0.3 et que le subset 2 est -0.25.
+Les moyennenes sur deux dataset ne sont donc pas la même. 
+
+Le subset 1 prend 11 éléments qui composent en 6 versicolors et 5 virginicas, et le subset 2 prend 27 éléments qui composent en 13 versicolors et 14 viriginicas. c'est que pourquoi l'histogramme du subset 1 représente des données plus éparées.
+
+Et, on peut savoir que la valeur observée du subset 1 est plus petit que celle du subset 2. On peut donc en conclure que la largeur médianne de pétale du subset 1 est moins élevée que celle du subset 2.
+
+
+
+
+**p-value** 
+```{r, collapse=TRUE}
+permutation_pvalue_twosided(ptest_stats_subset1$permuted, observed_value_subset1)
+permutation_pvalue_twosided(ptest_stats_subset2$permuted, observed_value_subset2)
+```
+
+On peut décider d'accepter ou de rejeter l'hypothèse nulle par la p-value. si la p-value est inférieur à 0.05, on peut dire d'être significative. 
+Dans nos exemples subset 1 et subset 2, la p-value est supérieur à 0.05. Donc on ne peut pas rejeter des deux hypothèses nulles. Et, les deux subsets, les valeurs de permutation sont le plus supérieurs à leurs valeurs observées.
+
+## Exercise 2
+```{r}
+#install.packages : "devtools"
+devtools::install_github("ewan/stats_course", subdir="data/stress_shift")
+```
+
+#### Task A
+```{r}
+stress_shift_3dict <- dplyr::filter(stressshift::stress_shift_unamb, Dict=="W1802" | Dict=="J1917" | Dict=="C1687")
+print(nrow(stress_shift_3dict)==451)
+```
+
+#### Task B
+```{r}
+stress_shift_3dict_using_pipe <- stressshift::stress_shift_unamb %>%  dplyr::filter(Dict=="W1802" | Dict=="J1917" | Dict=="C1687")
+identical(stress_shift_3dict, stress_shift_3dict_using_pipe)
+```
+
+#### Task C
+```{r}
+stress_shift_3dict_nouns <- dplyr::filter(stress_shift_3dict, Category=="Noun")
+stress_shift_3dict_verbs <- dplyr::filter(stress_shift_3dict, Category=="Verb")
+
+stress_shift_3dict_using_bind <- dplyr::bind_rows(stress_shift_3dict_nouns, stress_shift_3dict_verbs)
+stress_shift_3dict_using_bind_reversed <- dplyr::bind_rows(stress_shift_3dict_verbs, stress_shift_3dict_nouns)
+
+
+identical(stress_shift_3dict_using_bind, stress_shift_3dict) 
+identical(stress_shift_3dict_using_bind_reversed, stress_shift_3dict)
+```
+
+On peut savoir deux résultats que es tableaux **stress_shift_3dict_using_bind** et **stress_shift_3_dict** sont identiques, et que les tableaux **stress_shift_3dict_using_bind_reversed** et **stress_shift_3dict** ne sont pas identique.
+Parce que; pour le 1èr résultat, il prend la même ordre. Il est donc identique. En revanche, pour le 2ème résultat, il n'a pas l'ordre de la catégorie qui n'est pas le même. Il n'est pas donc identique.
+
+Si je travaille avec ces données, on dois comprendre les données et l'ordre des données, et il est important l'ordre des données.
+
+#### Task D
+```{r}
+stress_shift_nouns_renamed <- stressshift::stress_shift_unamb %>% 
+                              dplyr::filter(Category == "Noun") %>% 
+                              dplyr::select(Word, Dict, Syllable) %>%
+                              dplyr::rename(Syllable_Noun = Syllable)
+stress_shift_verbs_renamed <- stressshift::stress_shift_unamb %>%
+                              dplyr::filter(Category == "Verb") %>%
+                              dplyr::select(Word, Dict, Syllable) %>%
+                              dplyr::rename(Syllable_Verb = Syllable)
+
+
+stress_shift_wide <- dplyr::inner_join(stress_shift_nouns_renamed,stress_shift_verbs_renamed)
+```
+
+On a obtenu le résultat "Word" et "Dict" par la fonction **inner_join(x,y)**. Parce que la deuxième colonne se référence à la catégorie de nom ou de verbe. Donc, on traite à l'intersection de deux ensemble, les mots de chaque distionnaire appartenant à x et à y. 
+
+
+#### Task E
+
+```{r}
+ggplot2::ggplot(stressshift::stress_shift_unamb, ggplot2::aes(x=Category, fill=Syllable)) + 
+        ggplot2::geom_bar(position="dodge", colour="green")
+```
+
+####Task F
+
+```{r}
+
+stress_shift_byword <- stress_shift_wide %>%
+                       dplyr::group_by(Word) %>%
+                       dplyr::summarise(Noun_Percent_Syll_1=  (sum(Syllable_Noun=="Syllable 1")/n())*100, 
+                       Verb_Percent_Syll_1=  (sum(Syllable_Verb=="Syllable 1")/n())*100)
+print(nrow(stress_shift_byword)==149)
+```
+
+#### Task G
+
+```{r}
+ggplot2::ggplot(stress_shift_byword, ggplot2::aes(x=Noun_Percent_Syll_1, y=Verb_Percent_Syll_1)) +
+    ggplot2::geom_point(shape=1)
+```
+
+### Task H
+
+```{r}
+stress_shift_wide_all <- dplyr::full_join(stress_shift_nouns_renamed, stress_shift_verbs_renamed)
+
+stress_shift_byword_all <- stress_shift_wide_all %>%
+  dplyr::group_by(Word) %>%
+  dplyr::summarise(Noun_Percent_Syll_1=  (sum(Syllable_Noun=="Syllable 1")/n())*100, 
+            Verb_Percent_Syll_1=  (sum(Syllable_Verb=="Syllable 1")/n())*100)
+```
+
+## Exercise 3
+```{r}
+# creation du 1er data frame
+set.seed(12)
+a1 <- data.frame("group"="A", "value" = rnorm(50, 3, 2))
+b1 <- data.frame("group"="B", "value" = rnorm(50, 4, 2))
+data1 <- dplyr::bind_rows(a1, b1)
+set.seed(NULL)
+```
+
+```{r}
+# t-test
+t.test(a1$value, b1$value)
+```
+**Explication 1**
+On peut savoir que La t-value est -4.196 et le df est 97.99.
+C'est ici où on epeut dire qu'il est significative car la p-value est 5.974e-05.  
+Donc, on ne peut pas adopter l'hypothèse nulle car la p-value est inférieure à 0.05.  
+L'écart maximal de la moyenne peut être aussi faible que -2.13 et aussi élevé que -0.76
+Et, il montre également que l'échantillon de la moyenne pour x, est 2.714141, et celle pour y, est 4.161185.
+
+Maintenant on fait encore le t-test avec 5 sample dans le chaque groupe
+```{r}
+# creation du 2ème data frame
+set.seed(12)
+a2 <- data.frame("group"="A", "value" = rnorm(5, 3, 2))
+b2 <- data.frame("group"="B", "value" = rnorm(5, 4, 2))
+data2 <- dplyr::bind_rows(a2, b2)
+set.seed(NULL)
+```
+```{r}
+t.test(a2$value, b2$value)
+```
+C'est ici où on peut dire qu'il n'est pas significative car la p-value est 0.1577  
+Donc, on peut adopter l'hypothèse nulle car la p-value est supérieure à 0.05.
+L'ecart maximal de la moyenne peut être aussi faible que 1.488884, et aussi élevé que 3.64226
+
+Pour l'expérience 1, on rejete l'hypothèse nulle, tandis que, pour l'expérience 2, on l'adapte car la p-value est supéirue à 0.05.  
+
+#### Histogramme 1 sur hypothèse nuelle (50)
+```{r}
+overall_mean <- mean(c(a1$value,b1$value))
+
+N_SAMPLES <- 9999
+statistics <- rep(NA, N_SAMPLES)
+for (i in 1:N_SAMPLES) {
+  A_h0 <- rnorm(50, overall_mean, 2)
+  B_h0 <- rnorm(50, overall_mean, 2)
+  statistics[i] <- permutation_t_test(A_h0, B_h0)
+}
+
+hist(statistics, freq=FALSE, breaks=80, xlim=c(-6,6))
+abline(v=permutation_t_test(a1$value,b1$value))
+```
+on peut observer que la distribution empirique est 0. Donc, on peut rejeter l’hypothèse nulle car on ne peut pas verifier la valeur t qui n'est pas graphiquement dans la distribution de la variable de t-test.
+
+### Histrogramme 2 sur hypothèse nulle (5)
+```{r}
+
+overall_mean <- mean(c(a2$value,b2$value))
+
+N_SAMPLES <- 9999
+statistics <- rep(NA, N_SAMPLES)
+for (i in 1:N_SAMPLES) {
+  A_h0 <- rnorm(5, overall_mean, 2)
+  B_h0 <- rnorm(5, overall_mean, 2)
+  statistics[i] <- permutation_t_test(A_h0, B_h0)
+}
+
+hist(statistics, freq=FALSE, breaks=80, xlim=c(-6,6))
+abline(v=permutation_t_test(a2$value,b2$value))
+
+```
+On peut savoir le fait que la valeur t soit dans la distribution de la variable de t-test. 
+
+c'est-à-dire, si on prend 5, on obtient le t valeur qui est proche de 0. Donc on peut adapter l'hypothèse nulle car la t-value n'est pas à l'intervalle de confiance. En revanche, si on a 50, on ne peut pas adapter l'hypothèse nulle car on peut regarder que la t-value se place à l'intervalle de confiance. 
+
+
+# Exercise 4
+```{r}
+# Conditions :
+s_sizes <- c(5,50)
+means <- c(1,2)
+e_t <- c(2,6)
+alpha <- 0.01
+power_df <- NULL
+for (size in s_sizes){
+  for (mean in means){
+    for (sd in e_t){
+      N_SAMPLES <- 1000
+      n_successes <- 0
+      for(i in 1:N_SAMPLES){
+          a <- rnorm(size, 3, sd)
+          b <- rnorm(size, 3+mean, sd)
+          df <- tibble::data_frame(value=c(a, b), group=c(rep("A", size), rep("B",size)))
+          p_value <- t.test(dplyr::filter(df, group == "A")$value, dplyr::filter(df, group == "B")$value)$p.value
+          if (p_value < 0.05){n_successes <- n_successes + 1}
+          }
+          power <- n_successes / N_SAMPLES
+          power_df_current <- tibble::data_frame(power=power, size=size, sd=sd, mean=mean)
+          power_df <- dplyr::bind_rows(power_df, power_df_current)
+    }
+  }
+}
+
+```
+
+#### Résultats
+```{r}
+power_df %>%
+  tidyr::gather(-power, key = "var", value = "value") %>% 
+  ggplot2::ggplot(aes(x = value, y = power)) +
+    geom_point(colour="yellow") +
+    facet_wrap(~ var, scales = "free") +
+    theme_dark()
+```
+
+On fait à 3 plots : les variables de la colonne verticale "power" et la colonnes horizontales "value". les 3 graphiques sont sur la même ligne. il existe 8 conditions de chaque graphique. 
+On peut vérifier que, dans le "taille", la taille de "50" est la plus que celle de 5. Dans la "moyenne", la moyenne de "1" apparaît la moindre que celle de "2". Et, Dans la "écart type", l'écart type de "2" représente la plus que celui de "6".
