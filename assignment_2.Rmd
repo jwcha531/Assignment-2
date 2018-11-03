@@ -1,7 +1,7 @@
 ---
 title: "Assignment_2"
 author: "Jinwoo CHA"
-date: "10/11/2018"
+date: "11/oct/2018"
 output: html_document
 ---
 
