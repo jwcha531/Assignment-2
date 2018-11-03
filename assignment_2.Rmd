@@ -209,7 +209,7 @@ t.test(a1$value, b1$value)
 ```
 **Explication 1**
 On peut savoir que La t-value est -4.196 et le df est 97.99.
-C'est ici où on epeut dire qu'il est significant car la p-value est 5.974e-05.  
+C'est ici où on epeut dire qu'il est significative car la p-value est 5.974e-05.  
 Donc, on ne peut pas adopter l'hypothèse nulle car la p-value est inférieure à 0.05.  
 L'écart maximal de la moyenne peut être aussi faible que -2.13 et aussi élevé que -0.76
 Et, il montre également que l'échantillon de la moyenne pour x, est 2.714141, et celle pour y, est 4.161185.
@@ -226,7 +226,7 @@ set.seed(NULL)
 ```{r}
 t.test(a2$value, b2$value)
 ```
-C'est ici où on peut dire qu'il n'est pas significant car la p-value est 0.1577  
+C'est ici où on peut dire qu'il n'est pas significative car la p-value est 0.1577  
 Donc, on peut adopter l'hypothèse nulle car la p-value est supérieure à 0.05.
 L'ecart maximal de la moyenne peut être aussi faible que 1.488884, et aussi élevé que 3.64226
 
