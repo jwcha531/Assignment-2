@@ -310,5 +310,5 @@ power_df %>%
     theme_dark()
 ```
 
-On fait à 3 plots : les variables de la colonne verticale "power" et la colonnes horizontales "value". les 3 graphiques sont sur la même ligne. il existe 8 conditions de chaque graphique. 
-On peut vérifier que, dans le "taille", la taille de "50" est la plus que celle de 5. Dans la "moyenne", la moyenne de "1" apparaît la moindre que celle de "2". Et, Dans la "écart type", l'écart type de "2" représente la plus que celui de "6".
+On fait à 3 graphies sur la même ligne. les 3 graphies (la moyenne, l'écart type et la taille) construit comme suivant : les variables de la colonne verticale "power" et la colonnes horizontales "value". Et, il existe 8 conditions de chaque graphique. 
+En plus, On peut vérifier que, dans le "taille", la taille de "50" est la plus que celle de 5. Dans la "moyenne", la moyenne de "1" apparaît la moindre que celle de "2". Et, Dans la "écart type", l'écart type de "2" représente la plus que celui de "6".
