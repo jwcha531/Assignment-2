@@ -28,12 +28,15 @@ permutation_twogroups <- function(d, var, grouping_var, group1, group2, statisti
 
 
 ###
-permutation_pvalue_right <- function(simulated, observed) {
-  return(mean(simulated >= observed))
-}
-
-permutation_pvalue_left <- function(simulated, observed) {
-  return(mean(simulated <= observed))
+permutation_pvalue_twosided <- function(stats, obs) {
+  n_above_right <- sum(stats >= obs) + 1
+  n_above_left <- sum(stats <= obs) + 1
+  n_samples <- length(stats) + 1
+  permutation_pvalue_right <- (n_above_right)/(n_samples)
+  permutation_pvalue_left <- (n_above_left)/(n_samples)
+  print(permutation_pvalue_right)
+  print(permutation_pvalue_left)
+  return(2*min(permutation_pvalue_left, permutation_pvalue_right))
 }
 
 
