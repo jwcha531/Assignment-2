@@ -273,7 +273,6 @@ c'est-à-dire, si on prend 5, on obtient le t valeur qui est proche de 0. Donc o
 
 # Exercise 4
 ```{r}
-
 # Conditions :
 s_sizes <- c(5,50)
 means <- c(1,2)
@@ -284,13 +283,12 @@ for (size in s_sizes){
   for (mean in means){
     for (sd in s_deviations){
       n_successes <- 0
-      N_SAMPLES <- 1000
-      for(i in 1:N_SAMPLES){
+      for(i in 1:1000){
           a <- data.frame("group"= "A", "value" = rnorm(size, mean, sd))
           b <- data.frame("group"= "B", "value" = rnorm(size, mean, sd))
           p_value <- t.test(a$value, b$value)$p.value
           if (p_value < 0.05){n_successes <- n_successes + 1}
-          power <- n_successes / N_SAMPLES
+          power <- n_successes / 1000
           power_df_current <- tibble::data_frame(power=power, size=size, mean=mean, sd=sd)
           power_df <- dplyr::bind_rows(power_df, power_df_current)
       }
@@ -304,21 +302,21 @@ for (size in s_sizes){
 ggplot2::ggplot(power_df, 
                 ggplot2::aes(x=size, y=power)) +
                 ggplot2::labs(title="Taille", x="taille", y="Power") + 
-                ggplot2::geom_count(colour="black") +
-                ggplot2::theme_minimal()
+                ggplot2::geom_count(colour="yellow") +
+                ggplot2::theme_dark()
 
 ggplot2::ggplot(power_df, 
                 ggplot2::aes(x=mean, y=power)) +
                 ggplot2::labs(title="Moyenne", x="Moyenne", y="Power") + 
                 ggplot2::geom_count(colour="red")+
-                ggplot2::theme_minimal()
+                ggplot2::theme_dark()
 
 ggplot2::ggplot(power_df, 
                 ggplot2::aes(x=sd, y=power)) +
                 ggplot2::labs(title="Ecart type", x="Ecart type", y="Power") + 
                 ggplot2::geom_count(colour="green")+
-                ggplot2::theme_minimal()
+                ggplot2::theme_dark()
 ```
 
 On fait à 3 plots : les variables de la colonne verticale "power", les colonnes horizontales "moyenne", "Ecart type" et "taille" avec les résultats des 8 combinaisons.
-On peut vérifier que, dans le "taille", la taille de "50" est meuilleure que celle de 5. Dans la "moyenne", la moyenne de "1" est meilleurs que celle de "2". Et, Dans la "écart type"", l'écart type de "2" est meilleurs que celui de "6.
+On peut vérifier que, dans le "taille", la taille de "50" est meuilleure que celle de 5. Dans la "moyenne", la moyenne de "2" est meilleurs que celle de "1". Et, Dans la "écart type"", l'écart type de "2" est meilleurs que celui de "6".
